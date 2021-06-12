@@ -3,6 +3,11 @@ import { BASEURL } from "./constants";
 
 const instance = axios.create({
   baseURL: BASEURL,
+  headers: {
+    'Access-Control-Allow-Headers': '*',
+    'Content-Type': 'application/json'
+  }
+
 });
 
 export const fileAPI = {
