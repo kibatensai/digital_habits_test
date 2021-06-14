@@ -4,15 +4,15 @@ import FolderIcon from '@material-ui/icons/Folder';
 import PermMediaIcon from '@material-ui/icons/PermMedia';
 import TreeView from '@material-ui/lab/TreeView';
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { fetchData, fetchDataById } from "../../bll/action-creators/fileThunks";
+import { useActions } from '../../bll/hooks/useActions';
 import { useTypedSelector } from "../../bll/hooks/useTypedSelector";
 import { IElementStructureItem } from "../../interfaces/interfaces";
 import { StyledTreeItem, useStyles } from "../../material-styling/material-styling";
 import styling from './FilesExplorer.module.css';
 
 const FilesExplorer = () => {
-  const dispatch = useDispatch()
+  // thunks from hook useActions
+  const { fetchData, fetchDataById } = useActions()
 
   // data
   const files = useTypedSelector(state => state.files)
@@ -26,37 +26,34 @@ const FilesExplorer = () => {
   // material-ui styles
   const classes = useStyles();
 
-
   // fetching root object with first render
   useEffect(() => {
-    dispatch(fetchData())
-  }, [dispatch])
-
+    fetchData()
+  }, [])
 
   // function with checks if an element needed to be fetched
   const onClickFetch = (neededId: number, neededTitle: string) => {
 
-    // check if ID is rootID and handle rootID in *expanded* array
     if (neededId === 0) rootClick()
 
     // check if an element is a file and returns from a function if true
     if (neededTitle.split('.').length > 1 || neededTitle === files.title) return
 
-    // function that prevents meaningless queries
     checkIfFetched(neededId)
 
-    // updating state for collapses (handling *expanded* attribute of material-ui in render)
     collapseHandler(neededId)
 
   }
 
+  // function that prevents meaningless queries
   const checkIfFetched = (neededId: number) => {
     if (!arrayCheck.includes(neededId)) {
       setArrayCheck([...arrayCheck, neededId])
-      dispatch(fetchDataById(neededId))
+      fetchDataById(neededId)
     }
   }
 
+  // updating state for collapses (handling *expanded* attribute of material-ui in render)
   const collapseHandler = (neededId: number) => {
     let str = neededId.toString()
 
@@ -68,6 +65,7 @@ const FilesExplorer = () => {
     }
   }
 
+  // check if ID is rootID and handle rootID in *expanded* array
   const rootClick = () => {
     if (expanded.includes('0')) {
       let newExp = expanded.filter(elem => elem !== '0')
@@ -82,7 +80,7 @@ const FilesExplorer = () => {
     let icon = nodes.title.split('.').length > 1 ? PermMediaIcon : FolderIcon
     return <StyledTreeItem bgColor="#e8f0fe" labelIcon={icon}
       key={nodes.id} nodeId={nodes.id.toString()} labelText={nodes.title} onClick={() => onClickFetch(nodes.id, nodes.title)}>
-      {Array.isArray(nodes.children) ? nodes.children.map((node: any) => renderTree(node)) : null}
+      {Array.isArray(nodes.children) ? nodes.children.map((node) => renderTree(node)) : null}
     </StyledTreeItem>
   };
 

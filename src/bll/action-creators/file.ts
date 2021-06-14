@@ -5,30 +5,22 @@ import {
   FileActions,
   IElementStructureItem,
 } from "../../interfaces/interfaces";
+import { recursiveDataImport } from "../../helpers/recursiveDataImport";
 
+// Actions
+export const putDataToState = (data: IElementStructureItem) =>
+  ({ type: FileActions.FETCH_DATA, payload: data } as const);
+
+export const putDataByIdToState = (data: IElementStructureItem) =>
+  ({ type: FileActions.FETCH_DATA_BY_ID, payload: data } as const);
+
+// Thunks
 export const fetchData = () => async (dispatch: Dispatch) => {
   try {
     const { data } = await fileAPI.getData();
-    dispatch({ type: FileActions.FETCH_DATA, payload: data });
+    dispatch(putDataToState(data));
   } catch (e) {
     console.log(e);
-  }
-};
-
-let recursiveDataImport = (
-  obj: IElementStructureItem,
-  data: IElementStructureItem,
-  neededId: number
-) => {
-  if (!obj.children) {
-    return;
-  }
-  if (obj.id === neededId) {
-    obj.children = data.children;
-    return;
-  }
-  for (let i = 0; i < obj.children.length; i++) {
-    recursiveDataImport(obj.children[i], data, neededId);
   }
 };
 
@@ -38,7 +30,7 @@ export const fetchDataById =
     try {
       const { data } = await fileAPI.getDataById(id);
       recursiveDataImport(files, data, id);
-      dispatch({ type: FileActions.FETCH_DATA_BY_ID, payload: data });
+      dispatch(putDataByIdToState(data));
     } catch (e) {
       console.log(e);
     }
